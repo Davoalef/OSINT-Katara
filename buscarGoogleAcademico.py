@@ -7,7 +7,6 @@ import time
 import json
 import requests
 
-
 def BuscarGoogleAcademico(palabra_clave):
     from main import options
     driver = webdriver.Chrome(options=options)
@@ -15,45 +14,52 @@ def BuscarGoogleAcademico(palabra_clave):
     palabra = driver.find_element("css selector", "input[name='q']")
     palabra.clear()
     palabra.send_keys(palabra_clave)
-    time.sleep(3)
+    time.sleep(5)
     palabra.send_keys(Keys.RETURN)
-    time.sleep(3)
+    time.sleep(5)
     
     Algoritmos_titulo = []
     Algoritmos_link = []
 
     def ScrollPagina():
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)
+        time.sleep(30)
 
     def ExtraerMetaDatos():
         page = BeautifulSoup(driver.page_source, 'html.parser')
         for resultado in page.findAll('div', attrs={'class': 'gs_r gs_or gs_scl'}):
             titulo = resultado.find('h3', attrs={'class': 'gs_rt'})
             if titulo and titulo.a:
-                Algoritmos_titulo.append(titulo.text)
                 link = titulo.a.get('href')
+                Algoritmos_titulo.append(titulo.text)
                 Algoritmos_link.append(link)
+                
+                # Verificar el tipo de archivo antes de descargar
                 if link.endswith(".pdf"):
-                    DescargarPDF(link, palabra_clave)
+                    DescargarArchivo(link, palabra_clave, "pdf")
+                elif link.endswith(".txt"):
+                    DescargarArchivo(link, palabra_clave, "txt")
             else:
                 Algoritmos_titulo.append('No hay título')
                 Algoritmos_link.append('No hay link')
 
-    def DescargarPDF(link, carpeta_clave, tiempo_limite=60):
+    def DescargarArchivo(link, carpeta_clave, extension, tiempo_limite=60):
+        """ Descarga archivos PDF y TXT en carpetas separadas. """
         try:
             carpeta_clave = palabra_clave.replace(" ", "_").replace(":", "_")
-            Path(f"pdf/{carpeta_clave}").mkdir(parents=True, exist_ok=True)
-            
+            carpeta_destino = f"archivos/{extension}/{carpeta_clave}"
+            Path(carpeta_destino).mkdir(parents=True, exist_ok=True)
+
             response = requests.get(link, timeout=tiempo_limite, stream=True)
-            nombre_pdf = os.path.join(f"pdf/{carpeta_clave}", link.split("/")[-1])
-            with open(nombre_pdf, 'wb') as f:
+            nombre_archivo = os.path.join(carpeta_destino, link.split("/")[-1])
+
+            with open(nombre_archivo, 'wb') as f:
                 f.write(response.content)
-            time.sleep(3)
-            print(f"PDF descargado en {nombre_pdf}")
+
+            print(f"📂✅ Archivo descargado: {nombre_archivo}")
 
         except Exception as e:
-            print(f"Error al descargar el PDF {link}: {e}")
+            print(f"📁❌ Error al descargar {link}: {e}")
 
     def SiguientePagina():
         try:
@@ -66,7 +72,7 @@ def BuscarGoogleAcademico(palabra_clave):
             else:
                 return False
         except Exception as e:
-            print(f"Error al intentar encontrar el botón de siguiente página: {e}")
+            print(f"❌ Error al intentar encontrar el botón de siguiente página: {e}")
             return False
 
     while True:
@@ -75,7 +81,7 @@ def BuscarGoogleAcademico(palabra_clave):
         ExtraerMetaDatos()
         time.sleep(3)
         if not SiguientePagina():
-            print(f"\nNo hay más páginas para {palabra_clave} en Google Académico.")
+            print(f"\n🚀 No hay más páginas para `{palabra_clave}` en Google Académico.")
             break
         time.sleep(3)
 
@@ -88,4 +94,3 @@ def BuscarGoogleAcademico(palabra_clave):
 
     print(f"\nDatos guardados en {archivo_json}")
     driver.quit()
-
