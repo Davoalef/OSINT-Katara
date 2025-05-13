@@ -1,6 +1,9 @@
 # Katara
 Algoritmo OSINT para la identificación, descarga, recopilación y clasificación automática de archivos TXT y PDF en los motores de búsqueda Google y Google Scholar.
 
+## Video de complementación
+https://youtu.be/ifU7aYgq4ls 
+
 ## 🚀 Estructura "Katara"
 
 Dentro del proyecto, verás las siguientes carpetas y archivos:
@@ -97,6 +100,3 @@ Los archivos clasificados como **“Ejercicios”** se asumen como candidatos a 
 - Flujo completamente automatizado y escalable para grandes volúmenes de archivos.
 
 
-
-## Video de complementación
-https://youtu.be/ifU7aYgq4ls 
